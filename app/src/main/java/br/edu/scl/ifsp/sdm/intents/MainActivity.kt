@@ -3,6 +3,7 @@ package br.edu.scl.ifsp.sdm.intents
 import android.Manifest.permission.CALL_PHONE
 import android.content.Intent
 import android.content.Intent.ACTION_CALL
+import android.content.Intent.ACTION_CHOOSER
 import android.content.Intent.ACTION_DIAL
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -114,9 +115,7 @@ class MainActivity : AppCompatActivity() {
 
             R.id.viewMi -> {
                 //vamos criar uma intent do tipo action_view
-                val url = Uri.parse(activityMainBinding.parameterTv.text.toString())
-                val browserIntent = Intent(Intent.ACTION_VIEW, url)
-                startActivity(browserIntent)
+                startActivity(browserIntent())
                 true
             }
 
@@ -158,6 +157,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.chooserMi -> {
+                //Agora vamos selecionar um app para abrir a imagem mesmo que a gente tenha um app padrão
+                startActivity(
+                    Intent(ACTION_CHOOSER).apply {
+                        putExtra(Intent.EXTRA_TITLE, getString(R.string.choose_your_favorite_browser))
+                        putExtra(Intent.EXTRA_INTENT, browserIntent())
+                    }
+                )
                 true
             }
 
@@ -176,6 +182,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    private fun browserIntent(): Intent {
+        val url = Uri.parse(activityMainBinding.parameterTv.text.toString())
+        return Intent(Intent.ACTION_VIEW, url)
     }
 
 }
