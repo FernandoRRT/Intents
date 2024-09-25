@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -28,8 +29,12 @@ class MainActivity : AppCompatActivity() {
         private const val PAREMETER_REQUEST_CODE = 0
     }*/
 
+    //Objetos do tipo ActivityResultLauncher para lançar intents e pedir permissões
     private lateinit var parameterArl: ActivityResultLauncher<Intent>
+    //Esse é do tipo intente pois ele vai trabalhar com número de telefone
     private lateinit var callPhonePermissionArl: ActivityResultLauncher<String>
+    //Também é do tipo intent pois vai trabalhar com ação de escolher uma intent para manipular a imagem
+    private lateinit var pickImageArl: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +57,18 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this,
                     getString(R.string.permission_required_to_call), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        pickImageArl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                //tenho dois datas, um é a intent e o outro é a uri da imagem
+                result.data?.data?.also {
+                    activityMainBinding.parameterTv.text = it.toString()
+                    startActivity(Intent(Intent.ACTION_VIEW).apply {
+                        data = it
+                    })
+                }
             }
         }
 
@@ -129,6 +146,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.pickMi -> {
+                //action pick. Precisa pedir permissão do armazenamento externo do usuário
+
+                //extrai o caminho do diretório de imagens
+                val imageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).path
+                //Escolho aqui o app mais adequado para abrir essa img
+                pickImageArl.launch(Intent(Intent.ACTION_PICK).apply {
+                    setDataAndType(Uri.parse(imageDir), "image/*")
+                })
                 true
             }
 
